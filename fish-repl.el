@@ -46,11 +46,11 @@
   nil
   "List of functions to be executed on entry to `fish-repl-mode'.")
 
-(defcustom fish-repl-exec-command '("fish" "--init-command" "function fish_prompt; printf '> '; end")
-    "Fish repl exec command"
-    :group 'fish-repl
-    :tag "fish repl execution command"
-    :type '())
+(defcustom fish-repl-exec-command '("fish" "-i" "--init-command" "function fish_prompt; printf '> '; end")
+  "Fish repl exec command"
+  :group 'fish-repl
+  :tag "fish repl execution command"
+  :type '())
 
 (defvar fish-repl-comint-buffer-process
   nil
@@ -88,6 +88,7 @@
 
 ;;;###autoload
 (defun fish-repl-send-line ()
+  (interactive)
   (let ((str (thing-at-point 'line 'no-properties)))
     (comint-send-string (cadr (fish-repl--detect-buffer)) str)))
 
