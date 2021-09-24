@@ -1,12 +1,9 @@
 ;;; fish-repl.el --- summary -*- lexical-binding: t -*-
 
-;; Author: obara takeo
-;; Maintainer: obara takeo
-;; Version: version
-;; Package-Requires: (dependencies)
+;; Author: takeo obara
+;; Maintainer: takeo obara
+;; Version: 1.0.0
 ;; Homepage: https://github.com/takeokunn/fish-repl.el
-;; Keywords: fish
-
 
 ;; This file is not part of GNU Emacs
 
@@ -25,7 +22,74 @@
 
 ;;; Code:
 
-(message "Hello World!")
+(require 'comint)
+(require 'f)
+
+(defconst fish-repl-repl-number "1.0.0"
+  "fish repl version number.")
+
+(defgroup fish-repl ()
+  "fish repl"
+  :tag "Fish"
+  :prefix "fish-repl-"
+  :group 'fish-repl
+  :link '(url-link :tag "repo" "https://github.com/takeokunn/fish-repl.el"))
+
+(define-derived-mode fish-repl-mode comint-mode "Fish shell REPL"
+  "Major-mode for fish REPL.")
+
+(defvar fish-repl-mode-map
+  (let ((map (make-sparse-keymap)))
+    map))
+
+(defvar fish-repl-mode-hook
+  nil
+  "List of functions to be executed on entry to `fish-repl-mode'.")
+
+(defcustom fish-repl-exec-command '("fish" "--init-command" "function fish_prompt; printf '> '; end")
+    "Fish repl exec command"
+    :group 'fish-repl
+    :tag "fish repl execution command"
+    :type '())
+
+(defvar fish-repl-comint-buffer-process
+  nil
+  "A list (buffer-name process) is arguments for `make-comint'.")
+(make-variable-buffer-local 'fish-repl-comint-buffer-process)
+
+(defun fish-repl--detect-buffer ()
+  "Return tuple list, comint buffer name and program."
+  (or fish-repl-comint-buffer-process
+      '("fish-repl" "fish-repl")))
+
+(defun fish-repl--make-process ()
+  (apply 'make-comint-in-buffer
+         (car (fish-repl--detect-buffer))
+         (cadr (fish-repl--detect-buffer))
+         (car fish-repl-exec-command)
+         nil
+         (cdr fish-repl-exec-command)))
+
+;;;###autoload
+(defun fish-repl ()
+  (interactive)
+  (let* ((buf-name "fish-repl")
+         (my-dir (read-directory-name "DIRECTORY: "))
+         (default-directory my-dir))
+    (switch-to-buffer (fish-repl--make-process))
+    (fish-repl-mode)
+    (run-hooks 'fish-repl-hook)))
+(put 'fish-repl 'interactive-only 'fish-repl-run)
+
+;;;###autoload
+(defun fish-repl-run (buf-name process)
+  (let ((fish-repl-comint-buffer-process (list buf-name process)))
+    (call-interactively 'fish-repl)))
+
+;;;###autoload
+(defun fish-repl-send-line ()
+  (let ((str (thing-at-point 'line 'no-properties)))
+    (comint-send-string (cadr (fish-repl--detect-buffer)) str)))
 
 (provide 'fish-repl)
 
