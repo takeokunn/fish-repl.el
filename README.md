@@ -6,7 +6,7 @@ Run Fish Shell REPL in Emacs
 ## Usage
 
 ```emacs-lisp
-(require 'fish-repl.el)
+(require 'fish-repl)
 ```
 
 Type `M-x fish-repl` to run.
